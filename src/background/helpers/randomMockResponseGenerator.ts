@@ -5,7 +5,7 @@ import {
   printSchema,
   buildSchema,
 } from "graphql";
-import { MessageType} from "../../common/types";
+import { MessageType, BooleanType } from "../../common/types";
 import giveRandomResponse from "./randomMockDataGenerator";
 import { giveTypeMaps } from "./typeMapProvider";
 import { queryResponseValidator } from "./queryResponseValidator";
@@ -44,8 +44,8 @@ export const generateRandomizedResponse = async (
   requestConfig: any,
   requestId: string,
   graphqlQuery: string,
-  numRangeStart: number,
-  numRangeEnd: number,
+  numberStart: number,
+  numberEnd: number,
   isSpecialAllowed: boolean,
   arrayLength: number,
   stringLength: number,
@@ -121,8 +121,8 @@ export const generateRandomizedResponse = async (
       arrayLength: arrayLength ?? 4,
       isSpecialAllowed: isSpecialAllowed ?? true,
       booleanValues: booleanValues ?? "RANDOM",
-      numRangeEnd: numRangeEnd ?? 1000,
-      numRangeStart: numRangeStart ?? 1,
+      numberEnd: numberEnd ?? 1000,
+      numberStart: numberStart ?? 1,
       digitsAfterDecimal: digitsAfterDecimal ?? 2,
     };
 

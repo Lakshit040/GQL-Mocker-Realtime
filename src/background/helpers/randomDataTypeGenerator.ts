@@ -39,8 +39,8 @@ const booleanGenerator = (booleanValue: string): boolean => {
 export interface DataSet {
   stringLength: number;
   arrayLength: number;
-  numRangeStart: number;
-  numRangeEnd: number;
+  numberStart: number;
+  numberEnd: number;
   digitsAfterDecimal: number;
   booleanValues: string;
   isSpecialAllowed: boolean;
@@ -71,13 +71,13 @@ export const dynamicValueGenerator = (
       return stringGenerator(dataSet.stringLength, dataSet.isSpecialAllowed);
     case "Number":
     case "Int":
-      return intGenerator(dataSet.numRangeStart, dataSet.numRangeEnd);
+      return intGenerator(dataSet.numberStart, dataSet.numberEnd);
     case "ID":
       return uniqueId();
     case "Float":
       return floatGenerator(
-        dataSet.numRangeStart,
-        dataSet.numRangeEnd,
+        dataSet.numberStart,
+        dataSet.numberEnd,
         dataSet.digitsAfterDecimal
       );
     case "Boolean":

@@ -61,7 +61,7 @@ const DynamicRowComponent = ({
 before:inline-block before:w-6 before:h-6 before:bg-white checked:before:bg-blue-200 before:translate-x-0 checked:before:translate-x-full before:shadow before:rounded-full before:transform before:ring-0 before:transition before:ease-in-out before:duration-200 dark:before:bg-gray-400 dark:checked:before:bg-blue-200"
                 id={`rule-${id}`}
                 title={dynamicHook.enabled ? 'Stop mocking' : 'Start mocking'}
-                checked={dynamicHook.enabled}
+                checked={dynamicHook.enabled && dynamicHook.dynamicExpression.trim() !== ""}
                 onChange={dynamicHook.handleToggleEnabled}
               />
               <span className="sr-only">Checkbox</span>

@@ -17,8 +17,8 @@ describe('giveRandomResponse function', () => {
   const mockDataSet = {
     stringLength: 5,
     arrayLength: 3,
-    numRangeStart: 1,
-    numRangeEnd: 100,
+    numberStart: 1,
+    numberEnd: 100,
     digitsAfterDecimal: 2,
     booleanValues: "TRUE",
     isSpecialAllowed: false,

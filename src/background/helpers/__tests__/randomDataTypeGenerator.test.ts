@@ -5,8 +5,8 @@ describe('dynamicValueGenerator function', () => {
   const mockDataSet = {
     stringLength: 5,
     arrayLength: 5,
-    numRangeStart: 1,
-    numRangeEnd: 10,
+    numberStart: 1,
+    numberEnd: 10,
     digitsAfterDecimal: 2,
     booleanValues: "TRUE",
     isSpecialAllowed: true

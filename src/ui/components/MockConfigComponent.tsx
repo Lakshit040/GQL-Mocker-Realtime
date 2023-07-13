@@ -92,7 +92,7 @@ const MockConfigComponent = ({ id, onDelete }: MockConfigProps) => {
   );
   const handleDynamicConfigChanged = useCallback(
     (dynamicComponentId: string, data: DynamicComponentData) => {
-      if (!(data.dynamicExpression === "")) {
+      if (!(data.dynamicExpression.trim() === "")) {
         backgroundSetMockResponse(id, dynamicComponentId, data);
       }
     },

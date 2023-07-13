@@ -19,8 +19,8 @@ export const fastRandomize = async (
         arrayLength: 4,
         isSpecialAllowed: true,
         booleanValues: "RANDOM",
-        numRangeEnd: 1000,
-        numRangeStart: 1,
+        numberEnd: 1000,
+        numberStart: 1,
         digitsAfterDecimal: 2,
       };
 

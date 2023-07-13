@@ -9,19 +9,23 @@ import {
 } from "graphql";
 
 export const giveTypeMaps = async (typeMap: any) => {
-
+  const processedTypes = new Set();
   const interfaceTypes: Map<string, any> = new Map();
   const fieldTypes: Map<string, any> = new Map();
   const enumTypes: Map<string, string[]> = new Map();
   const unionTypes: Map<string, any> = new Map();
 
   const addInputFields = (inputType: GraphQLInputObjectType) => {
+    if(inputType === null || processedTypes.has(inputType.name)) {
+      return;
+    }
+    processedTypes.add(inputType.name);
     const fields = inputType.getFields();
     Object.values(fields).forEach((field) => {
       if (!inputType.name.startsWith("__")) {
         fieldTypes.set(field.name, String(field.type).replace(/!/g, ""));
       }
-      if (field.type instanceof GraphQLInputObjectType) {
+      if (field.type !== null && field.type instanceof GraphQLInputObjectType) {
         addInputFields(field.type);
       }
     });

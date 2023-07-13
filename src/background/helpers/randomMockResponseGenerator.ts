@@ -54,8 +54,12 @@ export const generateRandomizedResponse = async (
   mockResponse: string,
   shouldRandomizeResponse: boolean
 ): Promise<GeneratedResponseConfig> => {
-  if (!(shouldRandomizeResponse || graphqlQuery !== "")) {
-    return { data: JSON.parse(mockResponse).data };
+  if (graphqlQuery === "") {
+    try {
+      return { data: JSON.parse(mockResponse).data };
+    } catch (error) {
+      return { data: {}, message: "INVALID_JSON" };
+    }
   }
 
   try {
@@ -81,9 +85,7 @@ export const generateRandomizedResponse = async (
       const schemaString = printSchema(schemaSDL);
       try {
         await storeSchema(endpointHost, endpointPath, schemaString);
-      } catch (error) {
-        console.error(error);
-      }
+      } catch (error) {}
     }
     schemaString = await getSchema(endpointHost, endpointPath);
     const schemaSDL = buildSchema(schemaString!);
@@ -95,19 +97,24 @@ export const generateRandomizedResponse = async (
     const queryDocument = parse(graphqlQuery);
 
     if (!shouldRandomizeResponse) {
-      const response = queryResponseValidator(
-        JSON.parse(mockResponse!).data,
-        fieldTypes
-      );
-      return {
-        data: JSON.parse(mockResponse!).data,
-        message:
-          response.errors.length === 0 && response.fieldNotFound.length === 0
-            ? "VALID_RESPONSE"
-            : "INVALID_MOCK_RESPONSE",
-        non_matching_fields: response.errors,
-        field_not_found: response.fieldNotFound,
-      };
+      try {
+        const parsedMockResponse = JSON.parse(mockResponse);
+        const response = queryResponseValidator(
+          parsedMockResponse.data,
+          fieldTypes
+        );
+        return {
+          data: parsedMockResponse.data,
+          message:
+            response.errors.length === 0 && response.fieldNotFound.length === 0
+              ? "VALID_RESPONSE"
+              : "INVALID_MOCK_RESPONSE",
+          non_matching_fields: response.errors,
+          field_not_found: response.fieldNotFound,
+        };
+      } catch (error) {
+        return { data: {}, message: "INVALID_JSON" };
+      }
     }
     const dataSet = {
       stringLength: stringLength ?? 8,

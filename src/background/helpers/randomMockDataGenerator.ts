@@ -5,7 +5,7 @@ import {
   OperationDefinitionNode,
 } from "graphql";
 import { DataSet } from "./randomDataTypeGenerator";
-import {times} from "lodash";
+import { times } from "lodash";
 import { dynamicValueGenerator } from "./randomDataTypeGenerator";
 
 const giveRandomResponse = (
@@ -16,7 +16,7 @@ const giveRandomResponse = (
   interfaceTypes: Map<string, any>,
   dataSet: DataSet
 ) => {
-  let fieldNotFound : string = "";
+  let fieldNotFound: string = "";
   const generateMockResponse = (
     selectionSet: SelectionSetNode,
     typeMap: Map<string, any>
@@ -25,12 +25,12 @@ const giveRandomResponse = (
     let inlineFragmentProcessed: boolean = false;
     for (const field of selectionSet.selections) {
       if (field.kind === "InlineFragment") {
-        if(inlineFragmentProcessed) continue;
+        if (inlineFragmentProcessed) continue;
         const fragmentResponse = generateMockResponse(
           field.selectionSet!,
           typeMap
         );
-        for(const fragmentKey in fragmentResponse){
+        for (const fragmentKey in fragmentResponse) {
           response[fragmentKey] = fragmentResponse[fragmentKey];
         }
         inlineFragmentProcessed = true;
@@ -44,6 +44,8 @@ const giveRandomResponse = (
           response[fragmentKey] = fragmentResponse[fragmentKey];
         }
       } else {
+        if (field.name.value.startsWith("__")) continue;
+
         if (!typeMap.has(field.name.value)) {
           fieldNotFound = field.name.value;
           return {};
@@ -127,9 +129,12 @@ const giveRandomResponse = (
     }
     return {};
   };
-  
-  const generatedResponse = generateNestedMockResponse(queryDocument, fieldTypes);
-  if(fieldNotFound.length > 0){
+
+  const generatedResponse = generateNestedMockResponse(
+    queryDocument,
+    fieldTypes
+  );
+  if (fieldNotFound.length > 0) {
     return fieldNotFound;
   }
   return generatedResponse;

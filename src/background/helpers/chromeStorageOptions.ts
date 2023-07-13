@@ -3,12 +3,16 @@ import {
   writeToSessionStorage,
   deleteFromSessionStorage,
 } from "../../common/chromeStorageHelpers";
-import { DynamicComponentData } from "../../common/types";
+import { DynamicComponentData, StoredResponse} from "../../common/types";
 
 const Namespaces = {
   CachedSchema: "CACHED_SCHEMA",
   QueryEndpoint: "QUERY_ENDPOINT",
-  Operation: "OPERATION",
+  MockBinding: "MOCK_BINDING",
+  InvMockBinding: "INV_MOCK_BINDING",
+  MockRulesList: "MOCK_RULES_LIST",
+  MockRule: "MOCK_RULE",
+  ResponseHistory: "RESPONSE_HISTORY"
 };
 
 export const getSchema = async (endpointHost: string, endpointPath: string) => {
@@ -30,11 +34,15 @@ export const storeSchema = async (
   );
 };
 
-export const getQueryEndpoint = async (expressionId: string) => {
-  return await readFromSessionStorage(Namespaces.QueryEndpoint, expressionId);
+export const getQueryEndpoint = async (tabId: number, expressionId: string) => {
+  return await readFromSessionStorage(
+    Namespaces.QueryEndpoint,
+    `${tabId}_${expressionId}`
+  );
 };
 
 export const storeQueryEndpoint = async (
+  tabId: number,
   expressionId: string,
   query: string,
   origin: string,
@@ -42,40 +50,181 @@ export const storeQueryEndpoint = async (
 ) => {
   await writeToSessionStorage(
     Namespaces.QueryEndpoint,
-    expressionId,
+    `${tabId}_${expressionId}`,
     `${query}__${origin}__${path}`
   );
 };
 
-export const removeQueryEndpoint = async (expressionId: string) => {
-  await deleteFromSessionStorage(Namespaces.QueryEndpoint, expressionId);
-};
-
-export const getOperation = async (key: string) => {
-  return await readFromSessionStorage(Namespaces.Operation, key);
-};
-
-export const storeOperation = async (
-  key: string,
-  value: Record<string, DynamicComponentData>
+export const removeQueryEndpoint = async (
+  tabId: number,
+  expressionId: string
 ) => {
-  await writeToSessionStorage(Namespaces.Operation, key, value);
+  await deleteFromSessionStorage(
+    Namespaces.QueryEndpoint,
+    `${tabId}_${expressionId}`
+  );
 };
 
-export const deleteOperation = async (key: string) => {
-  await deleteFromSessionStorage(Namespaces.Operation, key);
+export const getMockBinding = async (tabId: number, key: string) => {
+  return await readFromSessionStorage(
+    Namespaces.MockBinding,
+    `${tabId}_${key}`
+  );
 };
 
-export const getOperationDetails = async (key: string) => {
-  return new Promise<any>((resolve) => {
-    chrome.storage.session.get([key], (result) => {
-      resolve(result[key] || {});
-    })
-  })
+export const storeMockBinding = async (
+  tabId: number,
+  key: string,
+  id: string
+) => {
+  await writeToSessionStorage(Namespaces.MockBinding, `${tabId}_${key}`, id);
+};
+
+export const deleteMockBinding = async (tabId: number, key: string) => {
+  await deleteFromSessionStorage(Namespaces.MockBinding, `${tabId}_${key}`);
+};
+
+export const getInvMockBinding = async (tabId: number, id: string) => {
+  return await readFromSessionStorage(
+    Namespaces.InvMockBinding,
+    `${tabId}_${id}`
+  );
+};
+
+export const storeInvMockBinding = async (
+  tabId: number,
+  id: string,
+  key: string
+) => {
+  await writeToSessionStorage(Namespaces.InvMockBinding, `${tabId}_${id}`, key);
+};
+
+export const deleteInvMockBinding = async (tabId: number, id: string) => {
+  await deleteFromSessionStorage(Namespaces.InvMockBinding, `${tabId}_${id}`);
+};
+
+export const getMockRulesList = async (
+  tabId: number,
+  id: string
+): Promise<string[]> => {
+  return (
+    (await readFromSessionStorage(
+      Namespaces.MockRulesList,
+      `${tabId}_${id}`
+    )) ?? []
+  );
+};
+
+export const storeMockRulesListItem = async (
+  tabId: number,
+  id: string,
+  dynamicComponentId: string
+) => {
+  const mockRulesList = await getMockRulesList(tabId, id);
+  if (!mockRulesList.includes(dynamicComponentId)) {
+    mockRulesList.push(dynamicComponentId);
+    await writeToSessionStorage(
+      Namespaces.MockRulesList,
+      `${tabId}_${id}`,
+      mockRulesList
+    );
+  }
+};
+
+export const deleteMockRulesListItem = async (
+  tabId: number,
+  id: string,
+  dynamicComponentId: string
+) => {
+  const mockRulesList = await getMockRulesList(tabId, id);
+  await writeToSessionStorage(
+    Namespaces.MockRulesList,
+    `${tabId}_${id}`,
+    mockRulesList.filter((item) => item !== dynamicComponentId)
+  );
+};
+
+export const deleteMockRulesList = async (tabId: number, id: string) => {
+  await deleteFromSessionStorage(Namespaces.MockRulesList, `${tabId}_${id}`);
+};
+
+export const getMockRules = async (
+  tabId: number,
+  id: string
+): Promise<Record<string, DynamicComponentData>> => {
+  const mockRulesList = await getMockRulesList(tabId, id);
+  const mockRules: Record<string, DynamicComponentData> = {};
+  for (const dynamicComponentId of mockRulesList) {
+    mockRules[dynamicComponentId] = await readFromSessionStorage(
+      Namespaces.MockRule,
+      `${tabId}_${id}_${dynamicComponentId}`
+    );
+  }
+  return mockRules;
+};
+
+export const storeMockRule = async (
+  tabId: number,
+  id: string,
+  dynamicComponentId: string,
+  dynamicComponentData: DynamicComponentData
+) => {
+  await storeMockRulesListItem(tabId, id, dynamicComponentId);
+  await writeToSessionStorage(
+    Namespaces.MockRule,
+    `${tabId}_${id}_${dynamicComponentId}`,
+    dynamicComponentData
+  );
+};
+
+export const deleteMockRule = async (
+  tabId: number,
+  id: string,
+  dynamicComponentId: string
+) => {
+  await deleteMockRulesListItem(tabId, id, dynamicComponentId);
+  await deleteFromSessionStorage(
+    Namespaces.MockRule,
+    `${tabId}_${id}_${dynamicComponentId}`
+  );
+};
+
+export const deleteMockRules = async (tabId: number, id: string) => {
+  const mockRulesList = await getMockRulesList(tabId, id);
+  for (const dynamicComponentId of mockRulesList) {
+    await deleteFromSessionStorage(
+      Namespaces.MockRule,
+      `${tabId}_${id}_${dynamicComponentId}`
+    );
+  }
+  await deleteMockRulesList(tabId, id);
+};
+
+export const getPreviousResponses = async () => {
+  return new Promise<any>((resolve, reject) => {
+    chrome.storage.local.get('responses', (result) => {
+      if(chrome.runtime.lastError){
+        resolve(undefined);
+      }
+      else{
+        resolve(result['responses'] || []);
+      }
+    });
+  });
 }
 
-export const storeOperationDetails = async (key: string, value: any) => {
-  return new Promise<any>((resolve) => {
-    chrome.storage.session.set({[key] : value});
+export const storeInResponseHistory = async (response: StoredResponse) => {
+  return new Promise(async (resolve, reject) => {
+    let responses = await getPreviousResponses();
+    if(responses){
+      responses = JSON.parse(responses);
+      responses.push(response);
+    }
+    else{
+      responses = [response];
+    }
+    chrome.storage.local.set({'responses' : JSON.stringify(responses)}, () => {
+      console.log('New response stored in local history!!');
+    })
   })
 }

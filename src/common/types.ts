@@ -1,15 +1,25 @@
 export enum MessageType {
   PanelMounted,
   RequestIntercepted,
-  SetMockResponse,
-  UnSetMockResponse,
+  BindMock,
+  UnbindMock,
+  SetMockRule,
+  UnSetMockRule,
   DoFetch,
   FetchResponse,
+  NewItem,
+  GetItems
 }
 
 export enum GraphQLOperationType {
   Query,
   Mutation,
+}
+
+export enum BooleanType {
+  True,
+  False,
+  Random,
 }
 
 const TRUE = "true";
@@ -23,22 +33,24 @@ const NORMAL_CHARACTERS =
 export interface DynamicComponentData {
   dynamicExpression: string;
   shouldRandomizeResponse: boolean;
-  numberStart: string;
-  numberEnd: string;
-  arrayLength: string;
-  stringLength: string;
+  numberRangeStart: number;
+  numberRangeEnd: number;
+  arrayLength: number;
+  stringLength: number;
   specialCharactersAllowed: boolean;
   mockResponse: string;
-  statusCode: string;
-  responseDelay: string;
-  afterDecimals: string;
+  statusCode: number;
+  responseDelay: number;
+  afterDecimals: number;
   booleanType: string;
+  enabled: boolean;
 }
 
-export {
-  TRUE,
-  FALSE,
-  RANDOM,
-  ALL_CHARACTERS,
-  NORMAL_CHARACTERS,
-};
+export { TRUE, FALSE, RANDOM, ALL_CHARACTERS, NORMAL_CHARACTERS };
+
+export interface StoredResponse{
+  operationType: GraphQLOperationType;
+  operationName: string;
+  operation: string;
+  response: string;
+}

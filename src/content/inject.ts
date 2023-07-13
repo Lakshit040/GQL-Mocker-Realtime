@@ -62,7 +62,10 @@ window.fetch = (req, config = undefined) => {
   return capture(req as string, config)
     .then(({ response, statusCode }) => {
       return new Response(response, {
-        headers: config?.headers ?? new Headers([]),
+        headers:
+          config?.headers !== undefined
+            ? JSON.parse(JSON.stringify(config?.headers))
+            : new Headers([]),
         status: statusCode,
       });
     })

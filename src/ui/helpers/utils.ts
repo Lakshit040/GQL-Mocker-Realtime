@@ -4,35 +4,51 @@ import {
   DynamicComponentData,
 } from "../../common/types";
 
-export const backgroundSetMockResponse = (
+export const backgroundBindMock = (
+  id: string,
   operationType: GraphQLOperationType,
-  operationName: string,
-  dynamicResponseData: Record<string, DynamicComponentData>
+  operationName: string
 ): void => {
+  if (operationName === "") return;
+  const { tabId } = chrome.devtools.inspectedWindow;
   chrome.runtime.sendMessage({
-    type: MessageType.SetMockResponse,
+    type: MessageType.BindMock,
+    data: { tabId, id, operationType, operationName },
+  });
+};
+
+export const backgroundUnbindMock = (id: string) => {
+  const { tabId } = chrome.devtools.inspectedWindow;
+  chrome.runtime.sendMessage({
+    type: MessageType.UnbindMock,
+    data: { tabId, id },
+  });
+};
+
+export const backgroundSetMockResponse = (
+  id: string,
+  dynamicComponentId: string,
+  dynamicComponentData: DynamicComponentData
+): void => {
+  const { tabId } = chrome.devtools.inspectedWindow;
+  chrome.runtime.sendMessage({
+    type: MessageType.SetMockRule,
     data: {
-      operationType,
-      operationName,
-      dynamicResponseData,
+      tabId,
+      id,
+      dynamicComponentId,
+      dynamicComponentData,
     },
   });
 };
 
 export const backgroundUnSetMockResponse = (
-  operationType: GraphQLOperationType,
-  operationName: string
+  id: string,
+  dynamicComponentId: string
 ): void => {
+  const { tabId } = chrome.devtools.inspectedWindow;
   chrome.runtime.sendMessage({
-    type: MessageType.UnSetMockResponse,
-    data: { operationType, operationName },
+    type: MessageType.UnSetMockRule,
+    data: { tabId, id, dynamicComponentId },
   });
-};
-
-export const dynamicDataConverter = (dataSet: any): any => {
-  dataSet.arrayLength = (isNaN(dataSet.arrayLength) ? 4 : Number(dataSet.arrayLength));
-  dataSet.stringLength = (isNaN(dataSet.stringLength) ? 8 : Number(dataSet.stringLength));
-  dataSet.numberStart = (isNaN(dataSet.numberStart) ? 1 : Number(dataSet.numberStart));
-  dataSet.numberEnd = (isNaN(dataSet.numberEnd) ? 1000 : Number(dataSet.numberEnd));
-  return dataSet;
 };

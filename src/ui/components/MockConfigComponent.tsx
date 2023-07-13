@@ -104,7 +104,7 @@ const MockConfigComponent = ({ id, onDelete }: MockConfigProps) => {
     <ContextForDynamicComponents.Provider
       value={{ register, unregister, handleAreMockingChange }}
     >
-      <div className="max-w-[85rem] px-4 py-6 sm:px-6 lg:px-8 lg:py-6 mx-auto">
+      <div className="max-w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-6 mx-auto">
         <div className="flex flex-col -m-1.5 overflow-x-auto p-1.5 min-w-full inline-block align-middle">
           <div className="border rounded-xl shadow-sm overflow-hidden bg-slate-900 border-gray-700">
             <div className="px-6 py-4 grid gap-3 md:flex md:justify-between md:items-center border-b border-gray-700">

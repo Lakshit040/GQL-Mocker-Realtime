@@ -4,8 +4,8 @@ import DynamicRowComponent from "../DynamicRowComponent";
 describe("<DynamicRowComponent />", () => {
   const mockProps = {
     id: "1",
-    onDynamicRowComponentDelete: jest.fn(),
-    onDynamicRowPlayPause: jest.fn(),
+    onDynamicRowDelete: jest.fn(),
+    onDynamicRowChanged: jest.fn()
   };
 
   it("should render correctly", () => {
@@ -21,18 +21,12 @@ describe("<DynamicRowComponent />", () => {
     expect(getByTitle(/Delete rule/i)).toBeInTheDocument();
   });
 
-  it("should call onDynamicRowPlayPause when the checkbox is clicked", () => {
-    const { getByLabelText } = render(<DynamicRowComponent {...mockProps} />);
-
-    fireEvent.click(getByLabelText(/Checkbox/i));
-    expect(mockProps.onDynamicRowPlayPause).toHaveBeenCalledWith(mockProps.id);
-  });
 
   it("should call onDynamicRowComponentDelete when Delete rule button is clicked", () => {
     const { getByTitle } = render(<DynamicRowComponent {...mockProps} />);
 
     fireEvent.click(getByTitle(/Delete rule/i));
-    expect(mockProps.onDynamicRowComponentDelete).toHaveBeenCalledWith(
+    expect(mockProps.onDynamicRowDelete).toHaveBeenCalledWith(
       mockProps.id
     );
   });

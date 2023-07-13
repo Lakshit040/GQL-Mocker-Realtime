@@ -119,29 +119,29 @@ const handleInterceptedRequest = async (
         config,
         requestId,
         query,
-        mockingRule.numberRangeStart,
-        mockingRule.numberRangeEnd,
+        Number(mockingRule.numberStart) ?? 1,
+        Number(mockingRule.numberEnd) ?? 1000,
         mockingRule.specialCharactersAllowed,
-        mockingRule.arrayLength,
-        mockingRule.stringLength,
+        Number(mockingRule.arrayLength) ?? 4,
+        Number(mockingRule.stringLength) ?? 8,
         mockingRule.booleanType,
-        mockingRule.afterDecimals,
+        Number(mockingRule.afterDecimals) ?? 2,
         mockingRule.mockResponse,
         mockingRule.shouldRandomizeResponse
       );
-      if (mockingRule.responseDelay > 0) {
+      if ((Number(mockingRule.responseDelay) ?? 1) > 0) {
         setTimeout(
           () =>
             resolve(
               JSON.stringify(generatedRandomResponse, null, 2),
-              mockingRule.statusCode
+              Number(mockingRule.statusCode) ?? 200
             ),
-          mockingRule.responseDelay
+          Number(mockingRule.responseDelay) ?? 0
         );
       } else {
         resolve(
           JSON.stringify(generatedRandomResponse, null, 2),
-          mockingRule.statusCode
+          Number(mockingRule.statusCode) ?? 200
         );
       }
 

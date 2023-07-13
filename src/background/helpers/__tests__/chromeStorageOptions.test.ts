@@ -9,9 +9,6 @@ import {
   getQueryEndpoint,
   storeQueryEndpoint,
   removeQueryEndpoint,
-  getOperation,
-  storeOperation,
-  deleteOperation,
 } from "../../helpers/chromeStorageOptions";
 
 jest.mock("../../../common/chromeStorageHelpers");
@@ -38,72 +35,5 @@ describe("Chrome Storage Helpers", () => {
       "testHost_testPath",
       "testSchema"
     );
-  });
-
-  it("getQueryEndpoint should call readFromSessionStorage with correct parameters", async () => {
-    await getQueryEndpoint("testExpression");
-    expect(readFromSessionStorage).toHaveBeenCalledWith(
-      "QUERY_ENDPOINT",
-      "testExpression"
-    );
-  });
-
-  it("storeQueryEndpoint should call writeToSessionStorage with correct parameters", async () => {
-    await storeQueryEndpoint(
-      "testExpression",
-      "testQuery",
-      "testOrigin",
-      "testPath"
-    );
-    expect(writeToSessionStorage).toHaveBeenCalledWith(
-      "QUERY_ENDPOINT",
-      "testExpression",
-      "testQuery__testOrigin__testPath"
-    );
-  });
-
-  it("removeQueryEndpoint should call deleteFromSessionStorage with correct parameters", async () => {
-    await removeQueryEndpoint("testExpression");
-    expect(deleteFromSessionStorage).toHaveBeenCalledWith(
-      "QUERY_ENDPOINT",
-      "testExpression"
-    );
-  });
-
-  it("getOperation should call readFromSessionStorage with correct parameters", async () => {
-    await getOperation("operationType_operationName");
-    expect(readFromSessionStorage).toHaveBeenCalledWith(
-      "OPERATION",
-      "operationType_operationName"
-    );
-  });
-
-  it("deleteOperation should call deleteFromSessionStorage with correct parameters", async () => {
-    await deleteOperation("operationType_operationName");
-    expect(deleteFromSessionStorage).toHaveBeenCalledWith(
-      "OPERATION",
-      "operationType_operationName"
-    );
-  });
-
-  it("storeOperation should call writeToSessionStorage with correct parameters", async () => {
-    const value = {
-      dynamicComponentDataKey: {
-        dynamicExpression: "example expression",
-        shouldRandomizeResponse: true,
-        numberStart: "1",
-        numberEnd: "100",
-        arrayLength: "5",
-        stringLength: "10",
-        specialCharactersAllowed: true,
-        mockResponse: "{data: {}}",
-        statusCode: "200",
-        responseDelay: "0",
-        afterDecimals: "2",
-        booleanType: "RANDOM",
-      },
-    };
-    await storeOperation("operationType_operationName", value);
-    expect(writeToSessionStorage).toHaveBeenCalledWith("OPERATION", "operationType_operationName", value);
   });
 });

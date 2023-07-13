@@ -1,4 +1,4 @@
-import React, { useCallback, useState, createContext, useRef } from "react";
+import React, { useCallback, useState, createContext, useEffect } from "react";
 import {
   DeleteSVG,
   CreateSVG,
@@ -9,9 +9,12 @@ import { v4 as uuidv4 } from "uuid";
 import DynamicRowComponent from "./DynamicRowComponent";
 import { GraphQLOperationType, DynamicComponentData } from "../../common/types";
 import {
+  backgroundBindMock,
+  backgroundUnbindMock,
   backgroundSetMockResponse,
   backgroundUnSetMockResponse,
 } from "../helpers/utils";
+
 import { removeQueryEndpoint } from "../../background/helpers/chromeStorageOptions";
 import TableHeadingComponent from "./TableHeadingComponent";
 const QUERY = "query";
@@ -33,37 +36,23 @@ interface MockConfigProps {
   onDelete: (id: string) => void;
 }
 const MockConfigComponent = ({ id, onDelete }: MockConfigProps) => {
-  const defaultRowKey = uuidv4();
+
   const [operationName, setOperationName] = useState("");
   const [operationType, setOperationType] = useState(
     GraphQLOperationType.Query
   );
   const [isExpanded, setIsExpanded] = useState(false);
-  const [dynamicConfigKeys, setDynamicConfigKeys] = useState([defaultRowKey]);
-  const [areMocking, setAreMocking] = useState(false);
-  const [childrenData, setChildrenData] = useState<
-    Record<string, DynamicComponentData>
-  >({});
-  const childrenDataRef = useRef<Record<string, DynamicComponentData>>({});
-  const register = (id: string, dynamicData: DynamicComponentData) => {
-    childrenDataRef.current[id] = dynamicData;
-    setChildrenData({ ...childrenDataRef.current });
-  };
-  const unregister = (id: string) => {
-    delete childrenDataRef.current[id];
-    setChildrenData({ ...childrenDataRef.current });
-  };
+  const [dynamicConfigKeys, setDynamicConfigKeys] = useState([uuidv4()]);
+
+  useEffect(() => {
+    backgroundBindMock(id, operationType, operationName);
+  }, [id, operationType, operationName]);
+
+    
   const handleExpandedButtonPressed = useCallback(() => {
     setIsExpanded((e) => !e);
   }, []);
-  const handleAreMockingChange = () => {
-    if (areMocking) {
-      backgroundUnSetMockResponse(operationType, operationName);
-    } else {
-      backgroundSetMockResponse(operationType, operationName, childrenData);
-    }
-    setAreMocking((e) => !e);
-  };
+  
   const handleOperationTypeChange = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>) => {
       event.target.value === QUERY
@@ -78,32 +67,40 @@ const MockConfigComponent = ({ id, onDelete }: MockConfigProps) => {
     },
     []
   );
+
   const handleDeleteMockConfig = useCallback(() => {
-    backgroundUnSetMockResponse(operationType, operationName);
+    backgroundUnbindMock(id);
     onDelete(id);
-  }, [id, onDelete, operationName, operationType]);
+  }, [id, onDelete]);
+
   const handleAddRuleButtonPressed = useCallback(() => {
-    backgroundUnSetMockResponse(operationType, operationName);
-    setAreMocking(false);
     setDynamicConfigKeys((keys) => [...keys, uuidv4()]);
   }, []);
-  const handleDynamicComponentDelete = useCallback(
-    async (id: string) => {
-      backgroundUnSetMockResponse(operationType, operationName);
-      setAreMocking(false);
-      await removeQueryEndpoint(id);
-      setDynamicConfigKeys((keys) => keys.filter((key) => key !== id));
+
+  const handleDeleteDynamicConfig = useCallback(
+    (dynamicComponentId: string) => {
+      backgroundUnSetMockResponse(id, dynamicComponentId);
+      removeQueryEndpoint(
+        chrome.devtools.inspectedWindow.tabId,
+        dynamicComponentId
+      );
+      setDynamicConfigKeys((keys) =>
+        keys.filter((key) => key !== dynamicComponentId)
+      );
     },
-    [operationName, operationType]
+    [id]
   );
-  const handlePlayPauseDynamicConfig = useCallback(() => {
-    backgroundUnSetMockResponse(operationType, operationName);
-    setAreMocking(false);
-  }, [operationType, operationName]);
+  const handleDynamicConfigChanged = useCallback(
+    (dynamicComponentId: string, data: DynamicComponentData) => {
+      if (!(data.dynamicExpression === "")) {
+        backgroundSetMockResponse(id, dynamicComponentId, data);
+      }
+    },
+    [id]
+  );
+
+  
   return (
-    <ContextForDynamicComponents.Provider
-      value={{ register, unregister, handleAreMockingChange }}
-    >
       <div className="max-w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-6 mx-auto">
         <div className="flex flex-col -m-1.5 overflow-x-auto p-1.5 min-w-full inline-block align-middle">
           <div className="border rounded-xl shadow-sm overflow-hidden bg-slate-900 border-gray-700">
@@ -174,7 +171,7 @@ const MockConfigComponent = ({ id, onDelete }: MockConfigProps) => {
                       htmlFor="mainCheckbox"
                       className="flex"
                     >
-                      <input
+                      {/* <input
                         type="checkbox"
                         checked={areMocking}
                         title={areMocking ? 'Deactivate config' : 'Activate config'}
@@ -182,7 +179,7 @@ const MockConfigComponent = ({ id, onDelete }: MockConfigProps) => {
                         className="relative shrink-0 w-[3.25rem] h-7 bg-gray-100 checked:bg-none checked:bg-blue-600 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 border border-transparent ring-1 ring-transparent   ring-offset-white focus:outline-none appearance-none dark:bg-gray-700 dark:checked:bg-blue-600 dark:focus:ring-offset-gray-800 before:inline-block before:w-6 before:h-6 before:bg-white checked:before:bg-blue-200 before:translate-x-0 checked:before:translate-x-full before:shadow before:rounded-full before:transform before:ring-0 before:transition before:ease-in-out before:duration-200 dark:before:bg-gray-400 dark:checked:before:bg-blue-200"
                         id="mainCheckbox"
                       />
-                      <span className="sr-only">Checkbox</span>
+                      <span className="sr-only">Checkbox</span> */}
                     </label>
                   </th>
                   <TableHeadingComponent />
@@ -193,8 +190,8 @@ const MockConfigComponent = ({ id, onDelete }: MockConfigProps) => {
                   <DynamicRowComponent
                     key={key}
                     id={key}
-                    onDynamicRowComponentDelete={handleDynamicComponentDelete}
-                    onDynamicRowPlayPause={handlePlayPauseDynamicConfig}
+                    onDynamicRowDelete={handleDeleteDynamicConfig}
+                    onDynamicRowChanged={handleDynamicConfigChanged}
                   />
                 ))}
               </tbody>
@@ -202,7 +199,6 @@ const MockConfigComponent = ({ id, onDelete }: MockConfigProps) => {
           </div>
         </div>
       </div>
-    </ContextForDynamicComponents.Provider>
   );
 };
 export default MockConfigComponent;

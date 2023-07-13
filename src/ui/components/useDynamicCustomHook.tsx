@@ -1,5 +1,5 @@
 import { useCallback, useReducer, ChangeEvent } from "react";
-
+import { BooleanType } from "../../common/types";
 
 type State = {
   booleanType: string;
@@ -14,6 +14,7 @@ type State = {
   statusCode: string;
   shouldRandomizeResponse: boolean;
   dynamicExpression: string;
+  enabled: boolean;
 };
 
 type Action = {
@@ -25,15 +26,16 @@ const initialState: State = {
   booleanType: "RANDOM",
   numberStart: "1",
   numberEnd: "1000",
-  afterDecimals: "2",
+  afterDecimals: "0",
   arrayLength: "4",
   stringLength: "8",
-  specialCharactersAllowed: true,
+  specialCharactersAllowed: false,
   mockResponse: "",
   responseDelay: "0",
   statusCode: "200",
-  shouldRandomizeResponse: true,
+  shouldRandomizeResponse: false,
   dynamicExpression: "",
+  enabled: false,
 };
 
 const reducer = (state: State, action: Action) => {
@@ -70,9 +72,10 @@ const useDynamicComponentHook = () => {
 
   const handleBooleanTypeChange = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
+      const currBooleanValue = event.target.value as keyof typeof BooleanType;
       dispatch({
         type: "booleanType",
-        payload: event.target.value
+        payload: currBooleanValue,
       });
     },
     []
@@ -90,10 +93,12 @@ const useDynamicComponentHook = () => {
         2
       );
       dispatch({ type: "mockResponse", payload: prettified });
-    } catch (err) {
-      console.log(err);
-    }
+    } catch (err) {}
   }, [state.mockResponse]);
+
+  const handleToggleEnabled = useCallback(() => {
+    dispatch({ type: "enabled", payload: !state.enabled });
+  }, [state.enabled]);
 
   return {
     ...state,
@@ -102,6 +107,7 @@ const useDynamicComponentHook = () => {
     handleBooleanTypeChange,
     handleGenerateResponseHere,
     handlePrettifyButtonPressed,
+    handleToggleEnabled,
   };
 };
 

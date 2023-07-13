@@ -1,52 +1,50 @@
 import { ChevronDownSVG, ChevronUpSVG, DeleteSVG } from "./SvgComponents";
 import React, { useCallback, useState, useContext, useEffect } from "react";
 import ExpandedRowComponent from "./ExpandedRowComponent";
-import { ContextForDynamicComponents } from "./MockConfigComponent";
 import useDynamicComponentHook from "./useDynamicCustomHook";
 import { fastRandomize } from "../../background/helpers/fastRandomization";
 import TableDataCellComponent from "./TableDataCellComponent";
-interface DynamicRowComponentProps {
+import { DynamicComponentData } from "../../common/types";
+
+interface DynamicRowProps {
   id: string;
-  onDynamicRowComponentDelete: (id: string) => void;
-  onDynamicRowPlayPause: (id: string) => void;
+  onDynamicRowDelete: (id: string) => void;
+  onDynamicRowChanged: (id: string, data: DynamicComponentData) => void;
 }
+
 
 const DynamicRowComponent = ({
   id,
-  onDynamicRowComponentDelete,
-  onDynamicRowPlayPause,
-}: DynamicRowComponentProps) => {
+  onDynamicRowDelete,
+  onDynamicRowChanged
+}: DynamicRowProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const dynamicHook = useDynamicComponentHook();
-  const { register, unregister } = useContext(ContextForDynamicComponents);
-  const [isMocking, setIsMocking] = useState(false);
+  
   useEffect(() => {
-    if (isMocking) {
-      register(id, dynamicHook);
-    }
-    return () => unregister(id);
-  }, [register, unregister, id, dynamicHook, isMocking]);
-  const handleMockingDynamicChange = useCallback(() => {
-    onDynamicRowPlayPause(id);
-    setIsMocking((e) => !e);
-  }, [id, onDynamicRowPlayPause]);
+    onDynamicRowChanged(id, dynamicHook);
+  }, [id, dynamicHook, onDynamicRowChanged]);
+
+
   const handleDeleteRowButtonPressed = useCallback(() => {
-    onDynamicRowComponentDelete(id);
-  }, [id, onDynamicRowComponentDelete]);
+    onDynamicRowDelete(id);
+  }, [id, onDynamicRowDelete]);
   const handleRowExpanded = useCallback(() => {
     setIsExpanded((e) => !e);
   }, []);
   const handleResponseHere = useCallback(
     async (id: string) => {
-      const response = await fastRandomize(id);
+      const { tabId } = chrome.devtools.inspectedWindow;
+      const response = await fastRandomize(tabId, id);
       if (response !== undefined) {
         dynamicHook.handleGenerateResponseHere(
           JSON.stringify(response, null, 2)
         );
       }
     },
-    [dynamicHook.handleGenerateResponseHere]
+    [dynamicHook]
   );
+
   return (
     <>
       <tr>
@@ -62,9 +60,9 @@ const DynamicRowComponent = ({
 
 before:inline-block before:w-6 before:h-6 before:bg-white checked:before:bg-blue-200 before:translate-x-0 checked:before:translate-x-full before:shadow before:rounded-full before:transform before:ring-0 before:transition before:ease-in-out before:duration-200 dark:before:bg-gray-400 dark:checked:before:bg-blue-200"
                 id={`rule-${id}`}
-                title={isMocking ? 'Stop mocking' : 'Start mocking'}
-                checked={isMocking}
-                onChange={handleMockingDynamicChange}
+                title={dynamicHook.enabled ? 'Stop mocking' : 'Start mocking'}
+                checked={dynamicHook.enabled}
+                onChange={dynamicHook.handleToggleEnabled}
               />
               <span className="sr-only">Checkbox</span>
             </label>
